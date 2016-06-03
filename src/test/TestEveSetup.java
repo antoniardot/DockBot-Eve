@@ -11,7 +11,7 @@ import lejos.utility.Delay;
  */
 public class TestEveSetup {
 	public static void main(String[] args) {
-		LCD.drawString("Plugin Test", 0, 4);
+		LCD.drawString("Plugin Testing", 0, 4);
 		Delay.msDelay(5000);
 	}
 
