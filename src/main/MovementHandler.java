@@ -4,7 +4,10 @@ import lejos.hardware.motor.Motor;
 
 public class MovementHandler {
 	
+	// 4.5 * Winkel des Motors
+	// z.B. 4.5 * 1 bewirkt, dass der Motor sich in der realen Welt um 1 Grad bewegt
 	private double ratio = 4.5;
+	private double cmconstant = 35;
 	
 	public MovementHandler () {
 		
@@ -14,21 +17,20 @@ public class MovementHandler {
 		
 	}
 	
-	public void moveForward (int cm) throws InterruptedException{
-		Motor.B.forward();
-    	Motor.C.forward();
-    	Thread.sleep(2000);
-    	Motor.B.stop(true);
-    	Motor.C.stop();
+	
+	public void moveForward (double cm) throws InterruptedException{
+		Motor.B.rotate(cmToAngle(cm), true);
+		Motor.C.rotate(cmToAngle(cm), true);
+    	//Motor.B.stop(true);
+    	//Motor.C.stop();
 	}
 	
-	public void moveBackward (int cm) throws InterruptedException {
+	public void moveBackward (double cm) throws InterruptedException {
 		
-		Motor.B.backward();
-    	Motor.C.backward();
-    	Thread.sleep(2000);
-    	Motor.B.stop(true);
-    	Motor.C.stop();
+		Motor.B.rotate(-cmToAngle(cm), true);
+		Motor.C.rotate(-cmToAngle(cm), true);
+    	//Motor.B.stop(true);
+    	//Motor.C.stop();
 		
 	}
 	
@@ -86,6 +88,13 @@ public class MovementHandler {
 		Double d = ratio*angle;
 				
 		return d.intValue();
+	}
+	
+	private int cmToAngle (double cm) {
+		
+		Double strecke = cmconstant*cm;
+		
+		return strecke.intValue();
 	}
 
 }

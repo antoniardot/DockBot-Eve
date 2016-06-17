@@ -53,43 +53,133 @@ public class Ev3Controller {
     
     System.out.println(tokens[0] + " " + tokens[1]);
     String answer = "";
+    String status = "200 OK\r\n\r\nOK: ";
 
     if (tokens.length > 1 && tokens[0].equals("GET")) {
     	
-      if (tokens[1].equals("/Hello")) {
+    	String command = tokens[1];
+    	
+    	String[] arr = command.split("-");
+    	
+      if (arr[0].equals("/Hello")) {
         Sound.beepSequenceUp();
        
       }
       
-  	  else if (tokens[1].equals("/backward")) {
+  	  else if (arr[0].equals("/backward")) {
+  		try {
+			double cm = Integer.parseInt(arr[1]);
+			handler.moveBackward(cm);
+			answer = "moving " + cm + " backwards";
+			}
+		
+		catch (NumberFormatException e) {
+			System.out.println("could not parse double parameter");
+			answer = "forward request failed";
+			status = "400 bad_request\r\n\r\nbad_request: ";
+			Sound.buzz();
+		}
   		
-  		handler.moveBackward(0);
-  		answer = "moving backward";
-  		
+  		catch (ArrayIndexOutOfBoundsException e) {
+			System.out.println("no distance in cm was given");
+			answer = "no distance in cm was given, backward request failed";
+			status = "400 bad_request\r\n\r\nbad_request: ";
+			Sound.buzz();
+		}
   	  }
-	  else if (tokens[1].equals("/forward")) {
-		handler.moveForward(0);
-		answer = "moving forward";
+      
+	  else if (arr[0].equals("/forward")) {
+		try {
+			double cm = Integer.parseInt(arr[1]);
+			handler.moveForward(cm);
+			answer = "moving " + cm + " forwards";
+			}
+		
+		catch (NumberFormatException e) {
+			System.out.println("could not parse double parameter");
+			answer = "forward request failed";
+			status = "400 bad_request\r\n\r\nbad_request: ";
+			Sound.buzz();
+		}
+		
+		catch (ArrayIndexOutOfBoundsException e) {
+			System.out.println("no distance in cm was given");
+			answer = "no distance in cm was given, forward request failed";
+			status = "400 bad_request\r\n\r\nbad_request: ";
+			Sound.buzz();
+		}
 	  }
-	  else if (tokens[1].equals("/turnright")) {
-		handler.turnRight(90);
-		answer = "turning right 90 degrees";
+      
+	  else if (arr[0].equals("/turnright")) {
+		try {
+			int cm = Integer.parseInt(arr[1]);
+			handler.turnRight(cm);
+			answer = "turning " + cm + " degrees to the right";
+			}
+		
+		catch (NumberFormatException e) {
+			System.out.println("could not parse integer parameter");
+			answer = "turning right request failed ";
+			status = "400 bad_request\r\n\r\nbad_request: ";
+			Sound.buzz();
+		}
+		
+		catch (InterruptedException e) {
+			System.out.println("was interrupted");
+			status = "400 bad_request\r\n\r\nbad_request: ";
+			Sound.buzz();
+		}
+		
+		catch (ArrayIndexOutOfBoundsException e) {
+			System.out.println("no angle in degrees was given");
+			answer = "no angle in degrees was given, turning right request failed";
+			status = "400 bad_request\r\n\r\nbad_request: ";
+			Sound.buzz();
+		}
+		
 	  }
-	  else if (tokens[1].equals("/turnleft")) {
-		handler.turnLeft(90);
-		answer = "turning left 90 degrees";
+      
+	  else if (arr[0].equals("/turnleft")) {
+		try {
+			int cm = Integer.parseInt(arr[1]);
+			handler.turnLeft(cm);
+			answer = "turning " + cm + " degrees to the left";
+			}
+		
+		catch (NumberFormatException e) {
+			System.out.println("could not parse integer parameter");
+			answer = "turning left request failed";
+			status = "400 bad_request\r\n\r\nbad_request: ";
+			Sound.buzz();
+		}
+		  
+		catch (ArrayIndexOutOfBoundsException e) {
+			System.out.println("no angle in degrees was given");
+			answer = "no angle in degrees was given, turning left request failed";
+			status = "400 bad_request\r\n\r\nbad_request: ";
+			Sound.buzz();
+		}
 	  }
-	  else if (tokens[1].equals("/grab")) {
+      
+	  else if (arr[0].equals("/grab")) {
 		handler.grab();
 		answer = "grabbing container";
 	  }
-	  else if (tokens[1].equals("/drop")) {
+      
+	  else if (arr[0].equals("/drop")) {
 		handler.drop();
 		answer = "dropping container";
 	  }
       
-      return "HTTP/1.1 200 OK\r\n\r\nOK: " + answer + "\r\n";
+	  else {
+		  answer = "You know nothing John Snow";
+		  status = "418 I'm a teapot\r\n\r\nI'm a teapot ";
+		  Sound.buzz();
+	  }
+      
+      return "HTTP/1.1 " + status + answer + "\r\n";
     }
+    
     return null;
   }
 
