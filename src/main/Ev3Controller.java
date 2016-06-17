@@ -23,7 +23,10 @@ public class Ev3Controller {
   }
 
   public void run() throws IOException, InterruptedException {
-    for (;;) {
+    
+	  handler.stdPosition();
+	  
+	  for (;;) {
       sock = ss.accept();
       InputStream is = sock.getInputStream();
       OutputStream os = sock.getOutputStream();
