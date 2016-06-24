@@ -1,6 +1,12 @@
 package main;
 
 import lejos.hardware.motor.Motor;
+import lejos.hardware.port.Port;
+import lejos.hardware.port.SensorPort;
+import lejos.hardware.sensor.EV3ColorSensor;
+import lejos.robotics.Color;
+import lejos.robotics.SampleProvider;
+import java.util.Arrays;
 
 public class MovementHandler {
 	
@@ -10,11 +16,25 @@ public class MovementHandler {
 	private double cmconstant = 35;
 	private int gridDistance = 25;
 	
+	private static Port colorSensorPort = SensorPort.S1;
+	private static EV3ColorSensor colorSensor;
+	private static SampleProvider sampleProvider;
+	private static int sampleSize;
+
+	
 	public MovementHandler () {
 		
 		Motor.A.setSpeed(180);
-		Motor.B.setSpeed(270);
-      	Motor.C.setSpeed(270);
+		//Motor.B.setSpeed(270);
+      	//Motor.C.setSpeed(270);
+		Motor.B.setSpeed(90);
+      	Motor.C.setSpeed(90);
+      	
+      	colorSensor = new EV3ColorSensor(colorSensorPort);
+        sampleProvider = colorSensor.getRedMode();
+        colorSensor.setFloodlight(Color.RED);
+        sampleSize = sampleProvider.sampleSize();
+
 		
 	}
 	
@@ -29,12 +49,27 @@ public class MovementHandler {
 			Motor.B.setSpeed(540);
 			Motor.C.setSpeed(540);
 		}
-				
-		Motor.B.rotate(cmToAngle(cm), true);
-		Motor.C.rotate(cmToAngle(cm), true);
-		Motor.B.waitComplete();
-		Motor.C.waitComplete();
-    	//Motor.B.stop(true);
+		
+			
+			Motor.B.rotate(cmToAngle(cm), true);
+			Motor.C.rotate(cmToAngle(cm), true);
+			
+			Motor.B.waitComplete();
+			Motor.C.waitComplete();
+	    	//Motor.B.stop(true);
+		
+		
+		
+		
+        // Takes some samples and prints them
+        for (int i = 0; i < 4; i++) {
+            float[] sample = getSample();
+            System.out.println("N=" + i + " Sample=" + Arrays.toString(sample));
+        }
+      
+   
+		
+		
     	//Motor.C.stop();
 		
 		Motor.B.setSpeed(270);
@@ -130,6 +165,81 @@ public class MovementHandler {
 		Motor.A.rotate(700);
 	}
 	
+	public void openClaw() {
+		
+		Motor.A.rotate(-720);
+		
+	}
+	
+	public void closeClaw() {
+		
+		Motor.A.rotate(720);
+		
+	}
+	
+	public void forwardTesting (double cm) throws InterruptedException{
+		
+		Motor.B.forward();
+		Motor.C.forward();
+		
+		int turns = cmToAngle(cm);
+		
+		while (Motor.B.isMoving() && Motor.C.isMoving()) {
+			
+			int angleB = Motor.B.getTachoCount();
+			int angleC = Motor.C.getTachoCount();
+			
+			if (angleB > turns) {
+				break;
+			}
+			
+			float[] sample = getSample();
+            System.out.println("N=" +  " Sample=" + Arrays.toString(sample));
+			
+            float limit = 0.1f;
+            int compi = Float.compare( getSample()[0], limit );
+            
+            System.out.println(compi);
+            System.out.println(getSample()[0]);
+            
+			if (compi < 0 ) {
+				//
+				Motor.B.stop(true);
+		    	Motor.C.stop();
+		    	
+		    	//kurskorrektur
+		    	Motor.B.rotate(calculateAngle(20), true);
+		    	Motor.C.rotate(calculateAngle(-20), true);
+		    	Motor.B.waitComplete();
+		    	Motor.C.waitComplete();
+		    	
+		    	//continue on your way
+		    	turns = turns - angleB;
+		    	Motor.B.forward();
+				Motor.C.forward();
+			}
+		}
+		
+		Motor.B.stop(true);
+    	Motor.C.stop();
+
+				
+		
+        // Takes some samples and prints them
+   /*     for (int i = 0; i < 4; i++) {
+            float[] sample = getSample();
+            System.out.println("N=" + i + " Sample=" + Arrays.toString(sample));
+        }
+     */ 
+   
+		
+		
+    	//Motor.C.stop();
+		
+	
+	}
+	
+	
 	private int calculateAngle (int angle) {
 		
 		Double d = ratio*angle;
@@ -143,5 +253,16 @@ public class MovementHandler {
 		
 		return strecke.intValue();
 	}
+	
+	private static float[] getSample() {
+	    // Initializes the array for holding samples
+	    float[] sample = new float[sampleSize];
+
+	    // Gets the sample an returns it
+	    sampleProvider.fetchSample(sample, 0);
+	    return sample;
+	  }
+	
+	
 
 }

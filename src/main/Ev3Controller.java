@@ -9,14 +9,16 @@ import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+
 import lejos.hardware.Sound;
+
 
 public class Ev3Controller {
   public static final int PORT = 80;
   private ServerSocket ss;
   private Socket sock;
   private MovementHandler handler;
-
+  
   public Ev3Controller() throws IOException {
     ss = new ServerSocket(PORT);
     handler = new MovementHandler();
@@ -174,6 +176,43 @@ public class Ev3Controller {
 		answer = "dropping container";
 	  }
       
+	  else if (arr[0].equals("/open")) {
+			handler.openClaw();
+			answer = "opening Claws";
+		  }
+      
+	  else if (arr[0].equals("/close")) {
+			handler.closeClaw();
+			answer = "closing Claws";
+		  }
+      
+	  else if (arr[0].equals("/exit")) {
+		  	System.exit(-1);
+			answer = "stopping program";
+		  }
+      
+	  else if (arr[0].equals("/test")) {
+			try {
+				double cm = Integer.parseInt(arr[1]);
+				handler.forwardTesting(cm);
+				answer = "moving " + cm + " forwards";
+				}
+			
+			catch (NumberFormatException e) {
+				System.out.println("could not parse double parameter");
+				answer = "forward request failed";
+				status = "400 bad_request\r\n\r\nbad_request: ";
+				Sound.buzz();
+			}
+			
+			catch (ArrayIndexOutOfBoundsException e) {
+				System.out.println("no distance in cm was given");
+				answer = "no distance in cm was given, forward request failed";
+				status = "400 bad_request\r\n\r\nbad_request: ";
+				Sound.buzz();
+			}
+		  }
+      
 	  else {
 		  answer = "You know nothing John Snow";
 		  status = "418 I'm a teapot\r\n\r\nI'm a teapot ";
@@ -186,11 +225,17 @@ public class Ev3Controller {
     return null;
   }
 
+  
+  
+  
   public static void main(String[] args) throws IOException {
     try {
-		Sound.beepSequenceUp();
+		
+     Sound.beepSequenceUp();
     	new Ev3Controller().run();
-	} catch (InterruptedException e) {
+    	
+    	
+  } catch (InterruptedException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
 	}
