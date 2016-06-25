@@ -184,20 +184,25 @@ public class MovementHandler {
 		
 		int turns = cmToAngle(cm);
 		
+		System.out.println(getSample()[0]);
+		
 		while (Motor.B.isMoving() && Motor.C.isMoving()) {
 			
 			int angleB = Motor.B.getTachoCount();
 			int angleC = Motor.C.getTachoCount();
 			
 			if (angleB > turns) {
+				
+				Motor.B.resetTachoCount();
+				Motor.A.resetTachoCount();
 				break;
 			}
 			
 			float[] sample = getSample();
             System.out.println("N=" +  " Sample=" + Arrays.toString(sample));
 			
-            float limit = 0.1f;
-            int compi = Float.compare( getSample()[0], limit );
+            float minimum = 0.35f;
+            int compi = Float.compare(sample[0], minimum);
             
             System.out.println(compi);
             System.out.println(getSample()[0]);
@@ -213,7 +218,11 @@ public class MovementHandler {
 		    	Motor.B.waitComplete();
 		    	Motor.C.waitComplete();
 		    	
+		    	//if the way was found again
+		    	
 		    	//continue on your way
+		    	Motor.B.resetTachoCount();
+				Motor.A.resetTachoCount();
 		    	turns = turns - angleB;
 		    	Motor.B.forward();
 				Motor.C.forward();
