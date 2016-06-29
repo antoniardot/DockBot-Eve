@@ -212,7 +212,51 @@ public class Ev3Controller {
 				Sound.buzz();
 			}
 		  }
-      
+	  else if (arr[0].equals("/printcolor")) {
+		  answer = handler.printColor();
+	  }
+	  else if (arr[0].equals("/setBlack")) {
+		  try {
+				double value = Integer.parseInt(arr[1]) * 0.1;
+				handler.setBlackValue(value);
+				answer = "setting black to " + value;
+				}
+			
+			catch (NumberFormatException e) {
+				System.out.println("could not parse double parameter");
+				answer = "setting black request failed";
+				status = "400 bad_request\r\n\r\nbad_request: ";
+				Sound.buzz();
+			}
+			
+			catch (ArrayIndexOutOfBoundsException e) {
+				System.out.println("no distance in cm was given");
+				answer = "no value was given, setting black request failed";
+				status = "400 bad_request\r\n\r\nbad_request: ";
+				Sound.buzz();
+			}
+	  }
+	  else if (arr[0].equals("/setWhite")) {
+		  try {
+				double value = Integer.parseInt(arr[1]) * 0.1;
+				handler.setWhiteValue(value);
+				answer = "setting white to " + value;
+				}
+			
+			catch (NumberFormatException e) {
+				System.out.println("could not parse double parameter");
+				answer = "setting white value request failed";
+				status = "400 bad_request\r\n\r\nbad_request: ";
+				Sound.buzz();
+			}
+			
+			catch (ArrayIndexOutOfBoundsException e) {
+				System.out.println("no distance in cm was given");
+				answer = "no value was given, setting white value request failed";
+				status = "400 bad_request\r\n\r\nbad_request: ";
+				Sound.buzz();
+			}
+	  }
 	  else {
 		  answer = "You know nothing John Snow";
 		  status = "418 I'm a teapot\r\n\r\nI'm a teapot ";

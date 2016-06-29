@@ -9,12 +9,22 @@ import lejos.robotics.SampleProvider;
 import java.util.Arrays;
 
 public class MovementHandler {
-	
+
+	//Motor C is right, Motor B is left
 	// 4.5 * Winkel des Motors
 	// z.B. 4.5 * 1 bewirkt, dass der Motor sich in der realen Welt um 1 Grad bewegt
-	private double ratio = 4.6;
+	//private double ratio = 4.6*(5*360)/(5*360+55)*(5*360+8)/(5*360);
+	private double ratio = 4.483450134;
+
 	private double cmconstant = 35;
 	private int gridDistance = 25;
+	
+	private double blackValue = 0.10;
+	private double whiteValue = 0.60;
+	
+	private int slowSpeed = 90;
+	private int normalSpeed = 150;
+	
 	
 	private static Port colorSensorPort = SensorPort.S1;
 	private static EV3ColorSensor colorSensor;
@@ -23,19 +33,16 @@ public class MovementHandler {
 
 	
 	public MovementHandler () {
-		
 		Motor.A.setSpeed(180);
-		//Motor.B.setSpeed(270);
-      	//Motor.C.setSpeed(270);
-		Motor.B.setSpeed(90);
-      	Motor.C.setSpeed(90);
+		Motor.B.setSpeed(slowSpeed);
+      	Motor.C.setSpeed(slowSpeed);
       	
       	colorSensor = new EV3ColorSensor(colorSensorPort);
         sampleProvider = colorSensor.getRedMode();
         colorSensor.setFloodlight(Color.RED);
         sampleSize = sampleProvider.sampleSize();
-
-		
+        
+        System.out.println("Faktor=" + ratio);
 	}
 	
 	public void stdPosition() throws InterruptedException{
@@ -50,16 +57,12 @@ public class MovementHandler {
 			Motor.C.setSpeed(540);
 		}
 		
-			
-			Motor.B.rotate(cmToAngle(cm), true);
-			Motor.C.rotate(cmToAngle(cm), true);
-			
-			Motor.B.waitComplete();
-			Motor.C.waitComplete();
-	    	//Motor.B.stop(true);
+		Motor.B.rotate(cmToAngle(cm), true);
+		Motor.C.rotate(cmToAngle(cm), true);
 		
-		
-		
+		Motor.B.waitComplete();
+		Motor.C.waitComplete();
+    	//Motor.B.stop(true);
 		
         // Takes some samples and prints them
         for (int i = 0; i < 4; i++) {
@@ -67,11 +70,7 @@ public class MovementHandler {
             System.out.println("N=" + i + " Sample=" + Arrays.toString(sample));
         }
       
-   
-		
-		
     	//Motor.C.stop();
-		
 		Motor.B.setSpeed(270);
       	Motor.C.setSpeed(270);
 	}
@@ -166,86 +165,115 @@ public class MovementHandler {
 	}
 	
 	public void openClaw() {
-		
 		Motor.A.rotate(-720);
-		
 	}
 	
 	public void closeClaw() {
-		
 		Motor.A.rotate(720);
-		
 	}
 	
 	public void forwardTesting (double cm) throws InterruptedException{
 		
+		//calculate how many times the motor has to turn
+		Motor.B.resetTachoCount();
+		Motor.C.resetTachoCount();
+		int turns = cmToAngle(cm);
+		
+		//start moving forward
 		Motor.B.forward();
 		Motor.C.forward();
 		
-		int turns = cmToAngle(cm);
+		Thread.sleep(1000);
 		
-		System.out.println(getSample()[0]);
-		
-		while (Motor.B.isMoving() && Motor.C.isMoving()) {
+		while (true) {
 			
+			//check if distance was reached and stop if so
 			int angleB = Motor.B.getTachoCount();
 			int angleC = Motor.C.getTachoCount();
 			
-			if (angleB > turns) {
-				
-				Motor.B.resetTachoCount();
-				Motor.A.resetTachoCount();
+			if (angleB > turns || angleC > turns) {
 				break;
 			}
 			
-			float[] sample = getSample();
-            System.out.println("N=" +  " Sample=" + Arrays.toString(sample));
 			
-            float minimum = 0.35f;
-            int compi = Float.compare(sample[0], minimum);
-            
-            System.out.println(compi);
-            System.out.println(getSample()[0]);
-            
-			if (compi < 0 ) {
-				//
-				Motor.B.stop(true);
-		    	Motor.C.stop();
-		    	
-		    	//kurskorrektur
-		    	Motor.B.rotate(calculateAngle(20), true);
-		    	Motor.C.rotate(calculateAngle(-20), true);
-		    	Motor.B.waitComplete();
-		    	Motor.C.waitComplete();
-		    	
-		    	//if the way was found again
-		    	
-		    	//continue on your way
-		    	Motor.B.resetTachoCount();
-				Motor.A.resetTachoCount();
-		    	turns = turns - angleB;
-		    	Motor.B.forward();
-				Motor.C.forward();
+			// if not reached yet, check if still on track
+			GroundColor ground = getGroundColor();
+			
+			switch(ground){
+			case GREY: 
+				//still on track, do nothing
+				System.out.println("GREY");
+				Motor.B.setSpeed(slowSpeed);
+				Motor.C.setSpeed(slowSpeed);
+				break;
+			case WHITE:
+				//turned to inner line
+				System.out.println("WHITE");
+				Motor.B.setSpeed(normalSpeed);
+				
+//				Motor.B.stop(true);
+//				Motor.C.stop();
+//				
+//				//kurs korrektur
+//				Motor.B.rotate(calculateAngle(20), true);
+//				Motor.C.rotate(calculateAngle(-20), true);
+//				Motor.B.waitComplete();
+//				Motor.C.waitComplete();
+//				
+//				//if the way was found again
+//				
+//				//continue on your way
+//				Motor.B.resetTachoCount();
+//				Motor.A.resetTachoCount();
+//				turns = turns - angleB;
+//				Motor.B.forward();
+//				Motor.C.forward();
+				break;
+			
+			case BLACK:
+				//turned to outer
+				System.out.println("BLACK");
+				Motor.C.setSpeed(normalSpeed);
+//				Motor.B.stop(true);
+//				Motor.C.stop();
+//				
+//				//kurs korrektur
+//				Motor.B.rotate(calculateAngle(20), true);
+//				Motor.C.rotate(calculateAngle(-20), true);
+//				Motor.B.waitComplete();
+//				Motor.C.waitComplete();
+//				
+//				//if the way was found again
+//				//continue on your way
+//				Motor.B.resetTachoCount();
+//				Motor.A.resetTachoCount();
+//				turns = turns - angleB;
+//				Motor.B.forward();
+//				Motor.C.forward();
+				break;
 			}
 		}
 		
+		//when while loop is done, stop moving
 		Motor.B.stop(true);
     	Motor.C.stop();
-
-				
-		
-        // Takes some samples and prints them
-   /*     for (int i = 0; i < 4; i++) {
-            float[] sample = getSample();
-            System.out.println("N=" + i + " Sample=" + Arrays.toString(sample));
-        }
-     */ 
-   
-		
-		
-    	//Motor.C.stop();
-		
+	}
 	
+	public String printColor()
+	{
+		float[] sample = getSample();
+		System.out.println("Sample= " + Arrays.toString(sample));
+		return Float.toString(sample[0]);
+	}
+	
+	public void setBlackValue(double color)
+	{
+		blackValue  = color;
+	}
+	
+	public void setWhiteValue(double color)
+	{
+		whiteValue  = color;
 	}
 	
 	
@@ -264,14 +292,32 @@ public class MovementHandler {
 	}
 	
 	private static float[] getSample() {
-	    // Initializes the array for holding samples
-	    float[] sample = new float[sampleSize];
+		// Initializes the array for holding samples
+		float[] sample = new float[sampleSize];
 
-	    // Gets the sample an returns it
-	    sampleProvider.fetchSample(sample, 0);
-	    return sample;
-	  }
+		// Gets the sample an returns it
+		sampleProvider.fetchSample(sample, 0);
+		return sample;
+	}
 	
+	private GroundColor getGroundColor()
+	{
+		float[] sample = getSample();
+		
+		if(sample[0] < blackValue)
+		{
+			return GroundColor.BLACK;
+		}
+		else if (sample[0] > whiteValue)
+		{
+			return GroundColor.WHITE;
+		}
+		return GroundColor.GREY;
+	}
 	
+	protected enum GroundColor
+	{
+		WHITE, GREY, BLACK
+	}
 
 }
