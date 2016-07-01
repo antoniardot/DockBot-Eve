@@ -3,17 +3,18 @@ package test;
 import java.util.Arrays;
 
 import lejos.hardware.sensor.EV3ColorSensor;
+import lejos.hardware.sensor.NXTColorSensor;
 import lejos.hardware.port.Port;
 import lejos.hardware.port.SensorPort;
 import lejos.robotics.Color;
 import lejos.robotics.SampleProvider;
 
-public class ColorSensorTest {
+public class NXTColorSensorTest2 {
 
     // Modes and samples are explained in LeJOS wiki:
     // http://sourceforge.net/p/lejos/wiki/Sensor%20Framework/
-    private static Port colorSensorPort = SensorPort.S1;
-    private static EV3ColorSensor colorSensor;
+    private static Port colorSensorPort = SensorPort.S2;
+    private static NXTColorSensor colorSensor;
     private static SampleProvider sampleProvider;
     private static int sampleSize;
 
@@ -28,7 +29,7 @@ public class ColorSensorTest {
 
     public static void main(String[] args) throws InterruptedException {
         // Initializes the sensor & sensor mode
-        colorSensor = new EV3ColorSensor(colorSensorPort);
+        colorSensor = new NXTColorSensor(colorSensorPort);
         sampleProvider = colorSensor.getRedMode();
         colorSensor.setFloodlight(Color.RED);
         sampleSize = sampleProvider.sampleSize();

@@ -20,7 +20,9 @@ public class Ev3Controller {
   private MovementHandler handler;
   
   public Ev3Controller() throws IOException {
+	System.out.println("Initializing Socket");
     ss = new ServerSocket(PORT);
+    System.out.println("Initializing MH");
     handler = new MovementHandler();
   }
 
@@ -218,7 +220,7 @@ public class Ev3Controller {
 	  else if (arr[0].equals("/setBlack")) {
 		  try {
 				double value = Integer.parseInt(arr[1]) * 0.1;
-				handler.setBlackValue(value);
+				handler.setBlackValueRight(value);
 				answer = "setting black to " + value;
 				}
 			
@@ -239,7 +241,7 @@ public class Ev3Controller {
 	  else if (arr[0].equals("/setWhite")) {
 		  try {
 				double value = Integer.parseInt(arr[1]) * 0.1;
-				handler.setWhiteValue(value);
+				handler.setBlackValueLeft(value);
 				answer = "setting white to " + value;
 				}
 			

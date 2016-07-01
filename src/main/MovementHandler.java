@@ -20,11 +20,11 @@ public class MovementHandler {
 	private double cmconstant = 35;
 	private int gridDistance = 25;
 	
-	private double blackValue = 0.10;
-	private double whiteValue = 0.60;
+	private double blackValueRight = 0.14;
+	private double blackValueLeft = 0.35;
 	
-	private int normalSpeed = 270;
-	private int fastSpeed = 250;
+	private int normalSpeed = 140;
+	private int fastSpeed = 170;
 	
 	
 	private static Port rightColorSensorPort = SensorPort.S1;
@@ -46,58 +46,15 @@ public class MovementHandler {
         rightColorSensor.setFloodlight(Color.RED);
         sampleSize = rightSampleProvider.sampleSize();
         
-       // leftColorSensor = new NXTColorSensor(leftColorSensorPort);
-     //   leftSampleProvider = leftColorSensor.getRedMode();
-     //   leftColorSensor.setFloodlight(Color.RED);
+        leftColorSensor = new NXTColorSensor(leftColorSensorPort);
+        leftSampleProvider = leftColorSensor.getRedMode();
+        leftColorSensor.setFloodlight(Color.RED);
         
 	}
 	
 	public void stdPosition() throws InterruptedException{
 		Motor.A.rotate(720);
       	Motor.A.waitComplete();
-	}
-	
-/*	public void moveForward (double cm) throws InterruptedException{
-		
-		if (cm > gridDistance) {
-			Motor.B.setSpeed(540);
-			Motor.C.setSpeed(540);
-		}
-		
-		Motor.B.rotate(cmToAngle(cm), true);
-		Motor.C.rotate(cmToAngle(cm), true);
-		
-		Motor.B.waitComplete();
-		Motor.C.waitComplete();
-    	//Motor.B.stop(true);
-		
-        // Takes some samples and prints them
-        for (int i = 0; i < 4; i++) {
-            float[] sample = getSample();
-            System.out.println("N=" + i + " Sample=" + Arrays.toString(sample));
-        }
-      
-    	//Motor.C.stop();
-		Motor.B.setSpeed(270);
-      	Motor.C.setSpeed(270);
-	}
-*/	
-	public void moveBackward (double cm) throws InterruptedException {
-		
-		if (cm > gridDistance) {
-			Motor.B.setSpeed(540);
-			Motor.C.setSpeed(540);
-		}
-		
-		Motor.B.rotate(-cmToAngle(cm), true);
-		Motor.C.rotate(-cmToAngle(cm), true);
-		Motor.B.waitComplete();
-		Motor.C.waitComplete();
-    	//Motor.B.stop(true);
-    	//Motor.C.stop();
-		
-		Motor.B.setSpeed(270);
-      	Motor.C.setSpeed(270);
 	}
 	
 	public void turnRight (int angle) throws InterruptedException {
@@ -179,6 +136,24 @@ public class MovementHandler {
 		Motor.A.rotate(720);
 	}
 	
+	public void moveBackward (double cm) throws InterruptedException {
+		
+		if (cm > gridDistance) {
+			Motor.B.setSpeed(540);
+			Motor.C.setSpeed(540);
+		}
+		
+		Motor.B.rotate(-cmToAngle(cm), true);
+		Motor.C.rotate(-cmToAngle(cm), true);
+		Motor.B.waitComplete();
+		Motor.C.waitComplete();
+		//Motor.B.stop(true);
+		//Motor.C.stop();
+		
+		Motor.B.setSpeed(270);
+	  	Motor.C.setSpeed(270);
+	}
+
 	public void moveForward (double cm) throws InterruptedException{
 		
 		//calculate how many times the motor has to turn
@@ -186,30 +161,23 @@ public class MovementHandler {
 		Motor.C.resetTachoCount();
 		int turns = cmToAngle(cm);
 		
-		Motor.B.setSpeed(normalSpeed);
-		Motor.C.setSpeed(normalSpeed);
-		
-		if (cm > gridDistance) {
-			Motor.B.setSpeed(540);
-			Motor.C.setSpeed(540);
-		}
+//		if (cm > gridDistance) {
+//			Motor.B.setSpeed(540);
+//			Motor.C.setSpeed(540);
+//		}
 		
 		//start moving forward
 		Motor.B.forward();
 		Motor.C.forward();
 		
-		//Thread.sleep(1000);
-		
 		while (true) {
-			
 			//check if distance was reached and stop if so
 			int angleB = Motor.B.getTachoCount();
 			int angleC = Motor.C.getTachoCount();
 			
-			if (angleB > turns || angleC > turns) {
+			if (angleB > turns && angleC > turns) {
 				break;
 			}
-			
 			
 			// if not reached yet, check if still on track
 			GroundColor ground = getGroundColor();
@@ -217,54 +185,24 @@ public class MovementHandler {
 			switch(ground){
 			case GREY: 
 				//still on track, do nothing
-				System.out.println("GREY");
+				System.out.println("IN LINE");
 				Motor.B.setSpeed(normalSpeed);
 				Motor.C.setSpeed(normalSpeed);
+				Motor.B.forward();
+				Motor.C.forward();
 				break;
-			case WHITE:
+			case BLACK_RIGHT:
 				//turned to inner line
-				System.out.println("WHITE");
-				Motor.B.setSpeed(fastSpeed);
-				
-//				Motor.B.stop(true);
-//				Motor.C.stop();
-//				
-//				//kurs korrektur
-//				Motor.B.rotate(calculateAngle(20), true);
-//				Motor.C.rotate(calculateAngle(-20), true);
-//				Motor.B.waitComplete();
-//				Motor.C.waitComplete();
-//				
-//				//if the way was found again
-//				
-//				//continue on your way
-//				Motor.B.resetTachoCount();
-//				Motor.A.resetTachoCount();
-//				turns = turns - angleB;
-//				Motor.B.forward();
-//				Motor.C.forward();
+				System.out.println("RIGHT BORDER");
+				Motor.C.setSpeed(fastSpeed);
+				Motor.C.forward();
 				break;
 			
-			case BLACK:
+			case BLACK_LEFT:
 				//turned to outer
-				System.out.println("BLACK");
-				Motor.C.setSpeed(fastSpeed);
-//				Motor.B.stop(true);
-//				Motor.C.stop();
-//				
-//				//kurs korrektur
-//				Motor.B.rotate(calculateAngle(20), true);
-//				Motor.C.rotate(calculateAngle(-20), true);
-//				Motor.B.waitComplete();
-//				Motor.C.waitComplete();
-//				
-//				//if the way was found again
-//				//continue on your way
-//				Motor.B.resetTachoCount();
-//				Motor.A.resetTachoCount();
-//				turns = turns - angleB;
-//				Motor.B.forward();
-//				Motor.C.forward();
+				System.out.println("LEFT BORDER");
+				Motor.B.setSpeed(fastSpeed);
+				Motor.B.forward();
 				break;
 			}
 		}
@@ -276,19 +214,19 @@ public class MovementHandler {
 	
 	public String printColor()
 	{
-		float[] sample = getSample();
-		System.out.println("Sample= " + Arrays.toString(sample));
-		return Float.toString(sample[0]);
+		String result = "LEFT: " + getLeftSample() + " RIGHT: " + getRightSample() ;
+		System.out.println(result);
+		return result;
 	}
 	
-	public void setBlackValue(double color)
+	public void setBlackValueRight(double color)
 	{
-		blackValue  = color;
+		blackValueRight  = color;
 	}
 	
-	public void setWhiteValue(double color)
+	public void setBlackValueLeft(double color)
 	{
-		whiteValue  = color;
+		blackValueLeft  = color;
 	}
 	
 	
@@ -306,33 +244,58 @@ public class MovementHandler {
 		return strecke.intValue();
 	}
 	
-	private static float[] getSample() {
+	private static double getRightSample() {
 		// Initializes the array for holding samples
 		float[] sample = new float[sampleSize];
 
 		// Gets the sample an returns it
 		rightSampleProvider.fetchSample(sample, 0);
-		return sample;
+		
+		float sum = 0;
+	    for (int i = 0; i < sample.length; i++){
+	      sum = sum + sample[i];
+	    }
+	    // calculate average
+	    double average = sum / sample.length;
+		return average;
+	}
+	
+	private static double getLeftSample() {
+		// Initializes the array for holding samples
+		float[] sample = new float[sampleSize];
+
+		// Gets the sample an returns it
+		leftSampleProvider.fetchSample(sample, 0);
+		
+		float sum = 0;
+	    for (int i = 0; i < sample.length; i++){
+	      sum = sum + sample[i];
+	    }
+	    // calculate average
+	    double average = sum / sample.length;
+		return average;
 	}
 	
 	private GroundColor getGroundColor()
 	{
-		float[] sample = getSample();
+		double right = getRightSample();
+		double left =getLeftSample();
 		
-		if(sample[0] < blackValue)
+		if(right < blackValueRight)
 		{
-			return GroundColor.GREY;
+			return GroundColor.BLACK_RIGHT;
 		}
-		else if (sample[0] > whiteValue)
+		else if (left < blackValueLeft)
 		{
-			return GroundColor.GREY;
+			return GroundColor.BLACK_LEFT;
 		}
+		System.out.println("Right: " + right + " left: " + left);
 		return GroundColor.GREY;
 	}
 	
 	protected enum GroundColor
 	{
-		WHITE, GREY, BLACK
+		BLACK_LEFT, GREY, BLACK_RIGHT
 	}
 
 }
