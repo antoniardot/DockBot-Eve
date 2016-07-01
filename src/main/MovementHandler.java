@@ -22,8 +22,8 @@ public class MovementHandler {
 	private double blackValue = 0.10;
 	private double whiteValue = 0.60;
 	
-	private int slowSpeed = 90;
-	private int normalSpeed = 150;
+	private int normalSpeed = 270;
+	private int fastSpeed = 250;
 	
 	
 	private static Port colorSensorPort = SensorPort.S1;
@@ -34,8 +34,8 @@ public class MovementHandler {
 	
 	public MovementHandler () {
 		Motor.A.setSpeed(180);
-		Motor.B.setSpeed(slowSpeed);
-      	Motor.C.setSpeed(slowSpeed);
+		Motor.B.setSpeed(normalSpeed);
+      	Motor.C.setSpeed(normalSpeed);
       	
       	colorSensor = new EV3ColorSensor(colorSensorPort);
         sampleProvider = colorSensor.getRedMode();
@@ -50,7 +50,7 @@ public class MovementHandler {
       	Motor.A.waitComplete();
 	}
 	
-	public void moveForward (double cm) throws InterruptedException{
+/*	public void moveForward (double cm) throws InterruptedException{
 		
 		if (cm > gridDistance) {
 			Motor.B.setSpeed(540);
@@ -74,7 +74,7 @@ public class MovementHandler {
 		Motor.B.setSpeed(270);
       	Motor.C.setSpeed(270);
 	}
-	
+*/	
 	public void moveBackward (double cm) throws InterruptedException {
 		
 		if (cm > gridDistance) {
@@ -172,18 +172,26 @@ public class MovementHandler {
 		Motor.A.rotate(720);
 	}
 	
-	public void forwardTesting (double cm) throws InterruptedException{
+	public void moveForward (double cm) throws InterruptedException{
 		
 		//calculate how many times the motor has to turn
 		Motor.B.resetTachoCount();
 		Motor.C.resetTachoCount();
 		int turns = cmToAngle(cm);
 		
+		Motor.B.setSpeed(normalSpeed);
+		Motor.C.setSpeed(normalSpeed);
+		
+		if (cm > gridDistance) {
+			Motor.B.setSpeed(540);
+			Motor.C.setSpeed(540);
+		}
+		
 		//start moving forward
 		Motor.B.forward();
 		Motor.C.forward();
 		
-		Thread.sleep(1000);
+		//Thread.sleep(1000);
 		
 		while (true) {
 			
@@ -203,13 +211,13 @@ public class MovementHandler {
 			case GREY: 
 				//still on track, do nothing
 				System.out.println("GREY");
-				Motor.B.setSpeed(slowSpeed);
-				Motor.C.setSpeed(slowSpeed);
+				Motor.B.setSpeed(normalSpeed);
+				Motor.C.setSpeed(normalSpeed);
 				break;
 			case WHITE:
 				//turned to inner line
 				System.out.println("WHITE");
-				Motor.B.setSpeed(normalSpeed);
+				Motor.B.setSpeed(fastSpeed);
 				
 //				Motor.B.stop(true);
 //				Motor.C.stop();
@@ -233,7 +241,7 @@ public class MovementHandler {
 			case BLACK:
 				//turned to outer
 				System.out.println("BLACK");
-				Motor.C.setSpeed(normalSpeed);
+				Motor.C.setSpeed(fastSpeed);
 //				Motor.B.stop(true);
 //				Motor.C.stop();
 //				
@@ -306,11 +314,11 @@ public class MovementHandler {
 		
 		if(sample[0] < blackValue)
 		{
-			return GroundColor.BLACK;
+			return GroundColor.GREY;
 		}
 		else if (sample[0] > whiteValue)
 		{
-			return GroundColor.WHITE;
+			return GroundColor.GREY;
 		}
 		return GroundColor.GREY;
 	}

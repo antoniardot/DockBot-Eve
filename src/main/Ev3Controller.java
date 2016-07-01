@@ -92,7 +92,7 @@ public class Ev3Controller {
 			Sound.buzz();
 		}
   	  }
-      
+/*      
 	  else if (arr[0].equals("/forward")) {
 		try {
 			double cm = Integer.parseInt(arr[1]);
@@ -114,7 +114,7 @@ public class Ev3Controller {
 			Sound.buzz();
 		}
 	  }
-      
+  */    
 	  else if (arr[0].equals("/turnright")) {
 		try {
 			int cm = Integer.parseInt(arr[1]);
@@ -191,10 +191,10 @@ public class Ev3Controller {
 			answer = "stopping program";
 		  }
       
-	  else if (arr[0].equals("/test")) {
+	  else if (arr[0].equals("/forward")) {
 			try {
 				double cm = Integer.parseInt(arr[1]);
-				handler.forwardTesting(cm);
+				handler.moveForward(cm);
 				answer = "moving " + cm + " forwards";
 				}
 			
