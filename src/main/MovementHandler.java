@@ -4,6 +4,7 @@ import lejos.hardware.motor.Motor;
 import lejos.hardware.port.Port;
 import lejos.hardware.port.SensorPort;
 import lejos.hardware.sensor.EV3ColorSensor;
+import lejos.hardware.sensor.NXTColorSensor;
 import lejos.robotics.Color;
 import lejos.robotics.SampleProvider;
 import java.util.Arrays;
@@ -26,23 +27,29 @@ public class MovementHandler {
 	private int fastSpeed = 250;
 	
 	
-	private static Port colorSensorPort = SensorPort.S1;
-	private static EV3ColorSensor colorSensor;
-	private static SampleProvider sampleProvider;
+	private static Port rightColorSensorPort = SensorPort.S1;
+	private static Port leftColorSensorPort = SensorPort.S2;
+	private static EV3ColorSensor rightColorSensor;
+	private static NXTColorSensor leftColorSensor;
+	private static SampleProvider rightSampleProvider;
+	private static SampleProvider leftSampleProvider;
 	private static int sampleSize;
-
+	
 	
 	public MovementHandler () {
 		Motor.A.setSpeed(180);
 		Motor.B.setSpeed(normalSpeed);
       	Motor.C.setSpeed(normalSpeed);
       	
-      	colorSensor = new EV3ColorSensor(colorSensorPort);
-        sampleProvider = colorSensor.getRedMode();
-        colorSensor.setFloodlight(Color.RED);
-        sampleSize = sampleProvider.sampleSize();
+      	rightColorSensor = new EV3ColorSensor(rightColorSensorPort);
+        rightSampleProvider = rightColorSensor.getRedMode();
+        rightColorSensor.setFloodlight(Color.RED);
+        sampleSize = rightSampleProvider.sampleSize();
         
-        System.out.println("Faktor=" + ratio);
+       // leftColorSensor = new NXTColorSensor(leftColorSensorPort);
+     //   leftSampleProvider = leftColorSensor.getRedMode();
+     //   leftColorSensor.setFloodlight(Color.RED);
+        
 	}
 	
 	public void stdPosition() throws InterruptedException{
@@ -304,7 +311,7 @@ public class MovementHandler {
 		float[] sample = new float[sampleSize];
 
 		// Gets the sample an returns it
-		sampleProvider.fetchSample(sample, 0);
+		rightSampleProvider.fetchSample(sample, 0);
 		return sample;
 	}
 	
