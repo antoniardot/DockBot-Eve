@@ -20,8 +20,8 @@ public class MovementHandler {
 	private double cmconstant = 35;
 	private int gridDistance = 25;
 	
-	private double blackValueRight = 0.14;
-	private double blackValueLeft = 0.35;
+	private double blackValueRight = 0.12;
+	private double blackValueLeft = 0.25;
 	
 	private int normalSpeed = 140;
 	private int fastSpeed = 170;
